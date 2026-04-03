@@ -3,7 +3,7 @@
 cmake_minimum_required(VERSION 3.21)
 
 # Set your project name. This will be the name of your SKSE .dll file.
-project(HelloWorld VERSION 0.0.1 LANGUAGES CXX)
+project(SneakyStealing VERSION 1.0.0 LANGUAGES CXX)
 
 # #
 # YOU DO NOT NEED TO EDIT ANYTHING BELOW HERE
@@ -35,6 +35,13 @@ find_package(CommonLibSSE CONFIG REQUIRED)
 add_commonlibsse_plugin(${PROJECT_NAME} SOURCES plugin.cpp) # <--- specifies plugin.cpp
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23) # <--- use C++23 standard
 target_precompile_headers(${PROJECT_NAME} PRIVATE PCH.h) # <--- PCH.h is required!
+
+# Add SimpleIni as a subdirectory
+add_subdirectory(external/simpleini)
+
+# Link against your target
+target_link_libraries(${PROJECT_NAME} PRIVATE SimpleIni::SimpleIni)
+
 
 # When your SKSE .dll is compiled, this will automatically copy the .dll into your mods folder.
 # Only works if you configure DEPLOY_ROOT above (or set the SKYRIM_MODS_FOLDER environment variable)

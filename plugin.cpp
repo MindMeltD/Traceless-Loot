@@ -1,17 +1,6 @@
 #include "logger.h"
+#include <REL/Relocation.h>
 #include "external/simpleini/SimpleIni.h"
-
-void OnMessage(SKSE::MessagingInterface::Message *message){ 
-    
-    if (message->type == SKSE::MessagingInterface::kNewGame) {
-        logger::info("New Game started");
-    } else if (message->type == SKSE::MessagingInterface::kSaveGame) {
-        logger::info("Game Saved");
-    } else if (message->type == SKSE::MessagingInterface::kPostLoadGame) {
-        logger::info("Save has finished loading");
-    }
-  
-}
 
 /*
  * @param: RE::FormID containerID - The FormID of the container or actor whose name you want to retrieve
@@ -103,12 +92,23 @@ struct OurEventSink : public RE::BSTEventSink<RE::TESContainerChangedEvent> {
         auto itemBoundObject = item ? item->As<RE::TESBoundObject>() : nullptr;
             if (!itemBoundObject) return RE::BSEventNotifyControl::kContinue;
 
-        
 
         auto playerInventory = player->GetInventory();
+            if (playerInventory.empty()) {
+                logger::info("Player inventory is empty or not populated");
+                return RE::BSEventNotifyControl::kContinue;
+            }
+
+
         auto itemInInventory = playerInventory.find(itemBoundObject);
         if (itemInInventory == playerInventory.end()) {
             logger::info("Item not found in inventory map yet");
+            return RE::BSEventNotifyControl::kContinue;
+        }
+
+        const auto &[count, entryptr] = itemInInventory->second;
+        if (!entryptr) {
+            logger::info("Entry pointer is null");
             return RE::BSEventNotifyControl::kContinue;
         }
         
@@ -167,12 +167,6 @@ SKSEPluginLoad(const SKSE::LoadInterface *skse) {
     // Once all plugins and mods are loaded, then the ~ console is ready and can
     // be printed to
 
-    SKSE::GetMessagingInterface()->RegisterListener([](SKSE::MessagingInterface::Message *message) {
-        if (message->type == SKSE::MessagingInterface::kDataLoaded)
-            RE::ConsoleLog::GetSingleton()->Print("Hello, world!");
-    });
-
-    SKSE::GetMessagingInterface()->RegisterListener(OnMessage);
     
     auto eventSink = new OurEventSink();
     auto* eventSourceHolder = RE::ScriptEventSourceHolder::GetSingleton();

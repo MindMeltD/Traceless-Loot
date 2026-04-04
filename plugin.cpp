@@ -122,20 +122,14 @@ struct OurEventSink : public RE::BSTEventSink<RE::TESContainerChangedEvent> {
         auto itemValue = item ? item->GetGoldValue() : 0;
         bool isOwnedByPlayer = entry->IsOwnedBy(player, true);
         bool isStolen = !isOwnedByPlayer;
-      
-        logger::info("Player took {} from {} worth {} septims: {}."
-            , itemName
-            ,GetContainerOrActorName(event->oldContainer)
-            , itemValue
-            , isOwnedByPlayer ? "[LEGAL]" : "[STOLEN]"
-        );
 
-        logger::info("Player {} {} {} from {} worth {} septims."
+        logger::info("Player {} {} {} from {} worth {} septims. {}"
             , isPlayerDetected() ? "openly" : "quietly"
             ,isOwnedByPlayer ? "took" : "stole"
             , itemName
             , GetContainerOrActorName(event->oldContainer)
             , itemValue
+            , isOwnedByPlayer ? "[LEGAL]" : "[STOLEN]"
         );
 
         if (!isPlayerDetected() && !isOwnedByPlayer) {

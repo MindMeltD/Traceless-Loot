@@ -34,6 +34,12 @@ endif()
 find_package(CommonLibSSE CONFIG REQUIRED)
 add_commonlibsse_plugin(${PROJECT_NAME} SOURCES plugin.cpp) # <--- specifies plugin.cpp
 
+#Decides whether or not plugin will be built with logging enabled
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    $<$<CONFIG:Debug>:ENABLE_LOGGING>
+)
+
+
 # Prevent local paths from being embedded in the .dll
 target_compile_options(${PROJECT_NAME} PRIVATE
     /experimental:deterministic

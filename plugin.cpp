@@ -40,7 +40,7 @@ bool isPlayerDetected() {
         std::uint32_t actorsWithLOS = 0;
         auto level = RE::ProcessLists::GetSingleton()->RequestHighestDetectionLevelAgainstActor(player, actorsWithLOS);
         
-        logger::info("Player detection level: {} with {} actors w/ LOS", level, actorsWithLOS);
+        LOG_TRACE("Player detection level: {} with {} actors w/ LOS", level, actorsWithLOS);
 
         return (level > 0);
     }   
@@ -53,16 +53,16 @@ bool isPlayerDetected() {
 void changeItemOwner(RE::InventoryEntryData* itemEntry) {
 
     if (!itemEntry) {
-        logger::info("Inventory entry is null");
+        LOG_DEBUG("Inventory entry is null");
         return;
     }
 
     if (itemEntry->extraLists) {
-        logger::info("Removing ownership from item...");
+        LOG_TRACE("Removing ownership from item...");
         for (auto *xList : *itemEntry->extraLists) {
             if (xList) {
                 if (xList->HasType(RE::ExtraDataType::kOwnership)) {
-                    logger::info("Found ownership data for item, removing...");
+                    LOG_TRACE("Found ownership data for item, removing...");
                     auto *extraOwnership = xList->GetByType<RE::ExtraOwnership>();
                     extraOwnership->owner = nullptr;  // Set owner to 0 to remove ownership
                 }
@@ -96,26 +96,26 @@ struct OurEventSink : public RE::BSTEventSink<RE::TESContainerChangedEvent> {
 
         auto playerInventory = player->GetInventory();
             if (playerInventory.empty()) {
-                logger::info("Player inventory is empty or not populated");
+                LOG_DEBUG("Player inventory is empty or not populated");
                 return RE::BSEventNotifyControl::kContinue;
             }
 
 
         auto itemInInventory = playerInventory.find(itemBoundObject);
         if (itemInInventory == playerInventory.end()) {
-            logger::info("Item not found in inventory map yet");
+            LOG_DEBUG("Item not found in inventory map yet");
             return RE::BSEventNotifyControl::kContinue;
         }
 
         const auto &[count, entryptr] = itemInInventory->second;
         if (!entryptr) {
-            logger::info("Entry pointer is null");
+            LOG_DEBUG("Entry pointer is null");
             return RE::BSEventNotifyControl::kContinue;
         }
         
         auto* entry = itemInInventory->second.second.get();
         if (!entry) {
-            logger::info("Inventory entry is null");
+            LOG_DEBUG("Inventory entry is null");
             return RE::BSEventNotifyControl::kContinue;
         }
 
@@ -124,7 +124,7 @@ struct OurEventSink : public RE::BSTEventSink<RE::TESContainerChangedEvent> {
         bool isOwnedByPlayer = entry->IsOwnedBy(player, true);
         bool isStolen = !isOwnedByPlayer;
 
-        logger::info("Player {} {} {} from {} worth {} septims. {}"
+        LOG_TRACE("Player {} {} {} from {} worth {} septims. {}"
             , isPlayerDetected() ? "openly" : "quietly"
             ,isOwnedByPlayer ? "took" : "stole"
             , itemName
@@ -135,7 +135,7 @@ struct OurEventSink : public RE::BSTEventSink<RE::TESContainerChangedEvent> {
 
         if (!isPlayerDetected() && !isOwnedByPlayer) {
             changeItemOwner(entry);
-            logger::info("Player now owns {} from {} worth {} septims.", itemName,
+            LOG_TRACE("Player now owns {} from {} worth {} septims.", itemName,
                             GetContainerOrActorName(event->oldContainer), itemValue);
         }
 
@@ -146,11 +146,11 @@ struct OurEventSink : public RE::BSTEventSink<RE::TESContainerChangedEvent> {
 
 void OnMessage(SKSE::MessagingInterface::Message *message) {
     if (message->type == SKSE::MessagingInterface::kNewGame) {
-        logger::info("New Game started");
+        LOG_TRACE("New Game started");
     } else if (message->type == SKSE::MessagingInterface::kSaveGame) {
-        logger::info("Game Saved");
+        LOG_TRACE("Game Saved");
     } else if (message->type == SKSE::MessagingInterface::kPostLoadGame) {
-        logger::info("Traceless Loot is now active.");
+        LOG_TRACE("Traceless Loot is now active.");
         auto eventSink = new OurEventSink();
         auto *eventSourceHolder = RE::ScriptEventSourceHolder::GetSingleton();
         eventSourceHolder->AddEventSink(eventSink);
@@ -172,11 +172,12 @@ SKSEPluginLoad(const SKSE::LoadInterface *skse) {
         critical
     */
 
-    logger::trace("TRACE");
-    logger::debug("DEBUG");
-    logger::warn("WARN");
-    logger::error("ERROR");
-    logger::critical("CRITICAL");
+    LOG_TRACE("TRACE");
+    LOG_DEBUG("DEBUG");
+    LOG_INFO("INFO");
+    LOG_WARN("WARN");
+    LOG_ERROR("ERROR");
+    LOG_CRITICAL("CRITICAL");
 
     // Once all plugins and mods are loaded, then the ~ console is ready and can
     // be printed to

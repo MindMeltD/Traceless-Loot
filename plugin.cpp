@@ -147,6 +147,10 @@ struct OurEventSink : public RE::BSTEventSink<RE::TESContainerChangedEvent> {
 void OnMessage(SKSE::MessagingInterface::Message *message) {
     if (message->type == SKSE::MessagingInterface::kNewGame) {
         LOG_TRACE("New Game started");
+        LOG_TRACE("Traceless Loot is now active.");
+        auto eventSink = new OurEventSink();
+        auto *eventSourceHolder = RE::ScriptEventSourceHolder::GetSingleton();
+        eventSourceHolder->AddEventSink(eventSink);
     } else if (message->type == SKSE::MessagingInterface::kSaveGame) {
         LOG_TRACE("Game Saved");
     } else if (message->type == SKSE::MessagingInterface::kPostLoadGame) {

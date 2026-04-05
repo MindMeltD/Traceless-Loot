@@ -3,7 +3,7 @@
 cmake_minimum_required(VERSION 3.21)
 
 # Set your project name. This will be the name of your SKSE .dll file.
-project(SneakyStealing VERSION 1.0.0 LANGUAGES CXX)
+project(TracelessLoot VERSION 1.0.0 LANGUAGES CXX)
 
 # #
 # YOU DO NOT NEED TO EDIT ANYTHING BELOW HERE
@@ -33,6 +33,14 @@ endif()
 # Setup your SKSE plugin as an SKSE plugin!
 find_package(CommonLibSSE CONFIG REQUIRED)
 add_commonlibsse_plugin(${PROJECT_NAME} SOURCES plugin.cpp) # <--- specifies plugin.cpp
+
+# Prevent local paths from being embedded in the .dll
+target_compile_options(${PROJECT_NAME} PRIVATE
+    /experimental:deterministic
+    /pathmap:${CMAKE_SOURCE_DIR}=/src
+    /pathmap:${CMAKE_BINARY_DIR}=/build
+)
+
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23) # <--- use C++23 standard
 target_precompile_headers(${PROJECT_NAME} PRIVATE PCH.h) # <--- PCH.h is required!
 
